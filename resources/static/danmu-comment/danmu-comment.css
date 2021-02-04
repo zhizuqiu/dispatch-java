@@ -1,0 +1,122 @@
+.alert_danmu {
+    z-index: 99999999;
+    position: absolute;
+    top: 70%;
+    left: 40%;
+    display: none;
+    width: 300px;
+    height: 150px;
+    line-height: 30px;
+    padding: 0 2px;
+    border: 1px solid #ccc;
+    box-shadow: 1px 1px 50px rgba(0, 0, 0, .3);
+    color: #333;
+    background-color: #fff;
+}
+
+.comment {
+    padding: 0 80px 0 20px;
+    height: 42px;
+    line-height: 42px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    background-color: #F8F8F8;
+    border-radius: 2px 2px 0 0
+}
+
+.div1_2 {
+    position: relative;
+    padding: 20px;
+    line-height: 24px;
+    word-break: break-all;
+    overflow: hidden;
+    font-size: 14px;
+    overflow-y: auto
+}
+
+.insert_danmu {
+    display: block;
+    width: 220px;
+    height: 30px;
+    margin: 0 auto;
+    line-height: 30px;
+    padding: 0 5px;
+    border: 1px solid #ccc;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, .1) inset;
+    color: #333
+}
+
+.div1_3 {
+    text-align: right;
+}
+
+.submit_danmu {
+    height: 28px;
+    margin: 0 6px;
+    padding: 5px 10px;
+    border: 1px solid #4898d5;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #2e8ded;
+    color: #fff;
+}
+
+.remove_danmu {
+    height: 28px;
+    margin: 0 6px;
+    padding: 5px 10px;
+    border: 1px solid #dedede;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #C9C5C5;
+    color: #fff
+}
+
+.danmu_shadow {
+    display: none;
+    position: fixed;
+    _position: absolute;
+    pointer-events: auto;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999998;
+    background-color: #000;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+}
+
+.danmu-base {
+    z-index: 99999997;
+    position: fixed;
+    white-space: nowrap;
+}
+
+.danmu-style-0 {
+    font-family: SimHei;
+    font-weight: 900;
+    font-size: larger;
+    color: rgb(102, 102, 102);
+    text-shadow: 1px 1px rgba(153, 153, 153, 0.8);
+}
+
+.danmu-style-1 {
+    display: none;
+    background-color: #000;
+    filter: alpha(opacity=60);
+    background-color: rgba(0, 0, 0, .6);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    text-align: center;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+}

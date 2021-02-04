@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>upload</title>
+</head>
+<!--引入CSS-->
+<link rel="stylesheet" type="text/css" href="static/webuploader-0.1.5/webuploader.css">
+<link rel="stylesheet" type="text/css" href="static/danmu-comment/danmu-comment.css">
+<style>
+    #upload-container, #upload-list {
+        width: 100%;
+        margin: 10px auto;
+    }
+
+    #upload-container {
+        cursor: pointer;
+        border-radius: 15px;
+        background: #EEEFFF;
+        height: 200px;
+    }
+
+    #upload-list {
+        /*height: 400px;
+        border: 1px solid #EEE;*/
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    #upload-container > span {
+        text-align: center;
+        color: gray;
+        display: block;
+        padding-top: 15%;
+    }
+
+    .upload-item {
+        margin-top: 5px;
+        padding-bottom: 5px;
+        border-bottom: 1px dashed gray;
+    }
+
+    .percentage {
+        height: 5px;
+        background: green;
+    }
+
+    .btn-delete, .btn-retry {
+        cursor: pointer;
+        color: gray;
+        margin-left: 5px;
+    }
+
+    .btn-delete:hover {
+        color: orange;
+    }
+
+    .btn-retry:hover {
+        color: green;
+    }
+
+    table tbody tr:hover {
+        background-color: #e8e7e7;
+    }
+
+    .bootom_right {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        right: 5px;
+        bottom: 5px;
+        z-index: 1000;
+        padding: 3px 3px 0 3px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        background: #fff;
+        width: 220px;
+    }
+
+</style>
+
+<body>
+
+<div style="width:64%;float:left;">
+    <div style="margin-right: 10px;float:left;">
+        <a id="newDir" style="cursor:pointer;color: #00a2d4"><u>新建目录</u></a>
+        <a style="margin-left: 10px">|</a>
+    </div>
+    <div id="breadcrumb" style="width:100%;">
+    </div>
+
+    <table id="list" style="width:100%;" class="table">
+    </table>
+</div>
+<div style="width:35%;float:left;margin-left:4px;">
+    <div id="upload-container">
+        <span>点击或将文件拖拽至此上传</span>
+    </div>
+    <div id="upload-list">
+    </div>
+    <button id="picker" style="display: none;">点击上传文件</button>
+</div>
+
+<div class="bootom_right">
+    <div style="padding: 2px;font-size: 5px;color: #C9C5C5">
+        <label>弹幕服务器连接状态：</label><label id="danmuStatus">Disconnected</label><br>
+        <label>敲击回车键输入弹幕</label>
+    </div>
+</div>
+
+</body>
+<script src="static/jquery/jquery-2.0.2.min.js"></script>
+<script src="static/webuploader-0.1.5/webuploader.js"></script>
+<script src="static/clipboard/clipboard.min.js"></script>
+<script src="static/danmu-comment/danmu-comment.js"></script>
+<script>
+
+    $(document).ready(function () {
+        initLi();
+        initBreadcrumb();
+        initDanmu();
+    });
+    var danmu = new Danmu_comment();
+
+    function initDanmu() {
+
+        $.ajax({
+            //请求方式
+            type: "GET",
+            //请求地址
+            url: "getDanmuServer",
+            //请求成功
+            success: function (result) {
+                startDanmu(result.danmuHost, result.danmuPort)
+            },
+            //请求失败，包含具体的错误信息
+            error: function (e) {
+                console.log(e.status);
+                console.log(e.responseText);
+            }
+        });
+
+    }
+
+    function startDanmu(host, port) {
+        $("#danmuStatus").html("Connecting");
+        danmu = new Danmu_comment();
+        danmu.init(host, port, "dispatch", "1", "13", "1");
+        danmu.onEvent('onopen', function (event) {
+            console.log(event);
+            $("#danmuStatus").html("Connected");
+        });
+        danmu.onEvent('onmessage', function (event) {
+            console.log(event);
+        });
+        danmu.onEvent('onclose', function (event) {
+            console.log(event);
+            $("#danmuStatus").html("Disconnected");
+            setTimeout(function () {
+                startDanmu(host, port)
+            }, 5000);
+        });
+    }
+
+    function initBreadcrumb() {
+        var breadcrumbDom = $('#breadcrumb');
+        breadcrumbDom.html("");
+        breadcrumbDom.append('<a href="upload?Path=/" style="margin-left: 5px">根目录</a>');
+
+        var path = getQueryString("Path");
+        if (path === "/") {
+            breadcrumbDom.append('<label style="margin-left: 5px">/</label>');
+            return
+        }
+        var pathList = path.split("/");
+        var nowPath = "";
+        breadcrumbDom.append('<label style="margin-left: 5px">/</label>');
+        for (let i = 0; i < pathList.length; i++) {
+            if (pathList[i] !== "") {
+                nowPath = nowPath + "/" + pathList[i];
+                if (i !== 1 && i !== pathList.length - 1) {
+                    breadcrumbDom.append('<label style="margin-left: 5px">/</label>');
+                }
+                breadcrumbDom.append('<a href="upload?Path=' + nowPath + '/" style="margin-left: 5px">' + pathList[i] + '</a>');
+            }
+        }
+        if (nowPath !== "/") {
+            nowPath = nowPath + "/"
+            breadcrumbDom.append('<label style="margin-left: 5px">/</label>');
+        }
+    }
+
+    function initLi() {
+        $.ajax({
+            //请求方式
+            type: "GET",
+            //请求地址
+            url: "file/List?Path=" + getQueryString("Path"),
+            //请求成功
+            success: function (result) {
+                createLi(result);
+            },
+            //请求失败，包含具体的错误信息
+            error: function (e) {
+                console.log(e.status);
+                console.log(e.responseText);
+            }
+        });
+    }
+
+    function createLi(result) {
+        console.log(result);
+        var list = $('#list');
+        list.html("");
+        list.append('<thead><tr><th style="width:60%;text-align:left;">Name</th><th style="width:20%;text-align:left;">LastModified</th><th style="width:10%;text-align:left;">length</th><th style="width:5%;text-align:left;">operate</th></tr></thead>');
+        for (var i = 0; i < result.length; i++) {
+            if (!result[i].IsDir) {
+                list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a style="padding-left: 23px;" href="data' + result[i].Path + '">' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
+            } else {
+                list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a href="upload?Path=' + result[i].Path + '"><img src="static/img/dir.png" style="vertical-align: middle;height:23px" alt=""/>' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
+            }
+        }
+    }
+
+    function getDownPath(path) {
+        var url = window.location.origin + window.location.pathname;
+        var i = url.length;
+        var endIndex = url.length;
+        for (; i >= 0; i -= 1) {
+            if (url.charAt(i) === '/') {
+                endIndex = i;
+                break;
+            }
+        }
+        var realUrl = url.substring(0, endIndex);
+        return realUrl + "/data" + path;
+    }
+
+    var clipboard = new Clipboard('.clip');
+    clipboard.on('success', function (e) {
+        console.log("copy success")
+    });
+    clipboard.on('error', function (e) {
+        console.log("copy error")
+    });
+
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return decodeURI(r[2]);
+        return '/'; // 默认返回
+    }
+
+    function deleteLi(id, isDir) {
+        if (confirm("确认删除【 " + id + " 】吗？")) {
+            $.ajax({
+                //请求方式
+                type: "DELETE",
+                //请求地址
+                url: "file/Delete?Path=" + id + "&IsDir=" + isDir,
+                //请求成功
+                success: function (result) {
+                    initLi();
+                },
+                //请求失败，包含具体的错误信息
+                error: function (e) {
+                    initLi();
+                }
+            });
+        }
+    }
+
+    $('#newDir').click(function () {
+        var path = prompt("请输入目录名字", "");
+        if (path) {
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            path = getQueryString("Path") + path;
+            $.ajax({
+                //请求方式
+                type: "PUT",
+                //请求地址
+                url: "file/newDir?Path=" + path,
+                //请求成功
+                success: function (result) {
+                    initLi();
+                },
+                //请求失败，包含具体的错误信息
+                error: function (e) {
+                    initLi();
+                }
+            });
+        }
+    });
+
+    $('#upload-container').click(function (event) {
+        $("#picker").find('input').click();
+    });
+    var uploader = WebUploader.create({
+        auto: true,// 选完文件后，是否自动上传。
+        swf: 'static//Uploader.swf',// swf文件路径
+        server: 'file/UploadFile?Path=' + getQueryString("Path"), // 文件接收服务端。
+        dnd: '#upload-container',
+        pick: '#picker',// 内部根据当前运行是创建，可能是input元素，也可能是flash. 这里是div的id
+        multiple: true, // 选择多个
+        chunked: false,// 开起分片上传。
+        threads: 5, // 上传并发数。允许同时最大上传进程数。
+        method: 'POST', // 文件上传方式，POST或者GET。
+        fileSizeLimit: 1024 * 1024 * 1024 * 5, //验证文件总大小是否超出限制, 超出则不允许加入队列。
+        fileSingleSizeLimit: 1024 * 1024 * 1024, //验证单个文件大小是否超出限制, 超出则不允许加入队列。1024 * 1024为1M
+        fileVal: 'upload', // [默认值：'file'] 设置文件上传域的name。
+    });
+
+    uploader.on('fileQueued', function (file) {
+        // 选中文件时要做的事情，比如在页面中显示选中的文件并添加到文件列表，获取文件的大小，文件类型等
+        console.log(file.ext); // 获取文件的后缀
+        console.log(file.size); // 获取文件的大小
+        console.log(file.name);
+        var html = '<div id="list_' + file.id + '" class="upload-item"><span>文件名：' + file.name + '</span><span data-file_id="' + file.id + '" class="btn-delete">删除</span><span data-file_id="' + file.id + '" class="btn-retry">重试</span><div class="percentage ' + file.id + '" style="width: 0%;"></div></div>';
+        $('#upload-list').append(html);
+    });
+
+    uploader.on('uploadProgress', function (file, percentage) {
+        console.log(percentage * 100 + '%');
+        var width = $('.upload-item').width();
+        $('.' + file.id).width(width * percentage);
+    });
+
+    uploader.on('uploadSuccess', function (file, response) {
+        console.log(file.id + "传输成功");
+        initLi();
+    });
+
+    uploader.on('uploadError', function (file) {
+        console.log(file.id + '传输失败');
+        initLi();
+    });
+
+    var uploadListDom = $('#upload-list');
+    uploadListDom.on('click', '.upload-item .btn-delete', function () {
+        // 从文件队列中删除某个文件id
+        file_id = $(this).data('file_id');
+        uploader.removeFile(file_id, true); // 从queue中删除，不设置true时，只标记为取消
+        $("#list_" + file_id).remove();
+        console.log(uploader.getFiles());
+    });
+
+    uploadListDom.on('click', '.btn-retry', function () {
+        uploader.retry($(this).data('file_id'));
+    });
+
+    uploader.on('uploadComplete', function (file) {
+        console.log(uploader.getFiles());
+    });
+</script>
+</html>
