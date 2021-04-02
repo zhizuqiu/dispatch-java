@@ -93,6 +93,9 @@
     </table>
 </div>
 <div style="width:35%;float:left;margin-left:4px;">
+    <div>
+        <label>上传工具 [ <a href="static/dispatch-up/dispatch-up">dispatch-up</a><img id="dispatchUp" title="复制下载地址" class="clip" data-clipboard-text='' src="static/img/url.png" style="margin-left: 5px;margin-right: 5px;cursor:pointer;"/>] [<a target="_blank" href="static/dispatch-up/dispatch-up.html">使用说明</a>]</label>
+    </div>
     <div id="upload-container">
         <span>点击或将文件拖拽至此上传</span>
     </div>
@@ -119,6 +122,7 @@
         initLi();
         initBreadcrumb();
         initDanmu();
+        $("#dispatchUp").attr("data-clipboard-text",getDispatchIpDownPath())
     });
     var danmu = new Danmu_comment();
 
@@ -185,7 +189,7 @@
             }
         }
         if (nowPath !== "/") {
-            nowPath = nowPath + "/"
+            nowPath = nowPath + "/";
             breadcrumbDom.append('<label style="margin-left: 5px">/</label>');
         }
     }
@@ -220,6 +224,20 @@
                 list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a href="upload?Path=' + result[i].Path + '"><img src="static/img/dir.png" style="vertical-align: middle;height:23px" alt=""/>' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
             }
         }
+    }
+
+    function getDispatchIpDownPath() {
+        var url = window.location.origin + window.location.pathname;
+        var i = url.length;
+        var endIndex = url.length;
+        for (; i >= 0; i -= 1) {
+            if (url.charAt(i) === '/') {
+                endIndex = i;
+                break;
+            }
+        }
+        var realUrl = url.substring(0, endIndex);
+        return realUrl + "/static/dispatch-up/dispatch-up";
     }
 
     function getDownPath(path) {

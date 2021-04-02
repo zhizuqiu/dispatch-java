@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>dispatch-up help</title>
+</head>
+<body>
+<pre>
+Usage of dispatch-up:
+  -a string
+    	dispatch server地址，例如：<label name="url"></label>
+  -config string
+    	dispatch配置文件路径
+  -d string
+    	要上传到的目录路径，例如：/temp/
+  -f string
+    	要上传的文件路径，例如：./nginx.conf
+  -h	show help.
+
+例如：
+dispatch-up -f ./some.zip
+dispatch-up -a <label name="url"></label> -f ./some.zip
+dispatch-up -a <label name="url"></label> -d /temp/ -f ./some.zip
+
+配置文件（默认：~/.dispatch/config）：
+address: <label name="url"></label>
+dir: /
+</pre>
+<script>
+    var url = window.location.protocol + "//" + window.location.host + "/";
+    var inputs = document.getElementsByName("url");
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].innerHTML = url;
+    }
+</script>
+</body>
+</html>
