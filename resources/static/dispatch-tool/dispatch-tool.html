@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>dispatch-tools help</title>
+</head>
+<body>
+<pre>
+Usage:
+  dispatch [command]
+
+Available Commands:
+  config      查看配置文件
+  download    下载文件
+  help        Help about any command
+  list        查询文件
+  up          上传文件
+
+Flags:
+  -a, --address string   dispatch server 的地址，例如：-a <label name="url"></label>
+      --config string    配置文件 (默认：$HOME/.dispatch/dispatch.yaml)
+  -d, --dir string       dispatch server 的目录路径，例如：-d /temp/
+  -h, --help             help for dispatch
+
+
+配置文件（默认：~/.dispatch/config）：
+address: <label name="url"></label>
+dir: /
+</pre>
+<script>
+    var url = window.location.protocol + "//" + window.location.host + "/";
+    var inputs = document.getElementsByName("url");
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].innerHTML = url;
+    }
+</script>
+</body>
+</html>
