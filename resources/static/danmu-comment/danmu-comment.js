@@ -7,16 +7,17 @@
 function Danmu_comment() {
     this.server_ip = "";
     this.server_port = "";
-    this.title  = "";
+    this.title = "";
     this.danmu_speed = "";
     this.keycode = "";
     this.danmu_style = "";
     this.alerts = [];
-    this.socket_danmu=null;
+    this.socket_danmu = null;
     this.events = [];
 }
+
 Danmu_comment.prototype = {
-    init: function (ip,port,title,speed,code,style) {
+    init: function (ip, port, title, speed, code, style) {
         this.server_ip = ip;
         this.server_port = port;
         this.title = title;
@@ -54,7 +55,7 @@ Danmu_comment.prototype = {
         };
 
         // remove button
-        if(that.danmu_style==1){
+        if (that.danmu_style == 1) {
             document.getElementById("remove_danmu").onclick = function () {
                 that.clear_danmu();
                 document.getElementById('alert_danmu').style.display = 'none';
@@ -64,7 +65,7 @@ Danmu_comment.prototype = {
 
         //submit button
         document.getElementById("submit_danmu").onclick = function () {
-            if (that.socket_danmu){
+            if (that.socket_danmu) {
                 that.socket_danmu.send(JSON.stringify({
                     'type': 'mess',
                     'title': that.title,
@@ -79,7 +80,7 @@ Danmu_comment.prototype = {
     bindWebsocket: function (that) {
         this.socket_danmu = new WebSocket('ws://' + this.server_ip + ':' + this.server_port);
         this.socket_danmu.onopen = function (event) {
-            that.fire('onopen',event);
+            that.fire('onopen', event);
             this.send(JSON.stringify({
                 'type': 'login',
                 'title': that.title,
@@ -92,30 +93,39 @@ Danmu_comment.prototype = {
             } else if (that.danmu_style == 1) {
                 that.addDanmu_style_1(JSON.parse(event.data));
             }
-            that.fire('onmessage',event);
+            that.fire('onmessage', event);
         };
         this.socket_danmu.onclose = function (event) {
-            that.fire('onclose',event);
+            that.fire('onclose', event);
         };
     },
-    onEvent: function (type,fn) {
-        if(typeof this.events[type] === 'undefined'){
+    onEvent: function (type, fn) {
+        if (typeof this.events[type] === 'undefined') {
             this.events[type] = [fn];
-        }else{
+        } else {
             this.events[type].push(fn);
         }
-    } ,
-    fire: function (type,event) {
-        if(!this.events[type]){
+    },
+    fire: function (type, event) {
+        if (!this.events[type]) {
             return;
         }
         var i = 0,
-        len = this.events[type].length;
-        for(;i<len;i++){
-            this.events[type][i].call(this,event);
+            len = this.events[type].length;
+        for (; i < len; i++) {
+            this.events[type][i].call(this, event);
         }
     },
     addInput: function () {
+        var thisNode = document.getElementById('alert_danmu');
+        if (thisNode) {
+            thisNode.remove();
+        }
+        thisNode = document.getElementById('danmu_shadow');
+        if (thisNode) {
+            thisNode.remove();
+        }
+
         var parent = document.getElementsByTagName("body")[0];
         var div = document.createElement("div");
         div.setAttribute("id", "alert_danmu");
@@ -162,7 +172,7 @@ Danmu_comment.prototype = {
         var parent = document.getElementsByTagName("body")[0];
         var div = document.createElement("div");
         div.setAttribute("name", "danmu");
-        div.setAttribute("class","danmu-base danmu-style-0");
+        div.setAttribute("class", "danmu-base danmu-style-0");
         div.setAttribute("style", "left:" + w + "px; top:" + h + "px;");
         div.innerHTML = danmu;
         document.getElementById('insert_danmu').value = "";
@@ -176,7 +186,7 @@ Danmu_comment.prototype = {
         var parent = document.getElementsByTagName("body")[0];
         var div = document.createElement("div");
         div.setAttribute("id", 'alert_' + danmu['time']);
-        div.setAttribute("class","danmu-base danmu-style-1");
+        div.setAttribute("class", "danmu-base danmu-style-1");
         div.setAttribute("style", " left:" + w_ram + "px; top:" + h_ram + "px;");
         div.innerHTML = danmu['message'];
         document.getElementById('insert_danmu').value = "";
@@ -211,8 +221,7 @@ Danmu_comment.prototype = {
         var t = setInterval(function () {
             if (el.style.opacity < 1) {
                 el.style.opacity = parseFloat(el.style.opacity) + 0.01;
-            }
-            else {
+            } else {
                 clearInterval(t);
             }
         }, time / 100);
