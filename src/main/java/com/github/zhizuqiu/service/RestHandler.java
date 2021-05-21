@@ -194,8 +194,13 @@ public class RestHandler {
             String filePath = App.PATH + "/data" + path + fileUpload.getFilename();
             System.out.println("filePath: " + filePath);
             File f = new File(filePath);
+
+            if (f.exists()) {
+                System.out.println("delete result: " + f.delete());
+            }
+
             try {
-                System.out.println("result: " + fileUpload.renameTo(f));
+                System.out.println("renameTo result: " + fileUpload.renameTo(f));
             } catch (IOException e) {
                 e.printStackTrace();
                 response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);

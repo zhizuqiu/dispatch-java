@@ -800,3 +800,5 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+resources/data/*

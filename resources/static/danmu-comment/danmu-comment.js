@@ -208,8 +208,23 @@ Danmu_comment.prototype = {
             }
         }
     },
+    fixDanmu: function (that) {
+        var danmus = that.getElementByClassName(document, "div", "danmu-style-1");
+        for (danmu_ in danmus) {
+            if (danmus[danmu_].style) {
+                var windowW = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+                var r = parseInt(danmus[danmu_].style.left) + danmus[danmu_].offsetWidth + 10
+                if (r > windowW) {
+                    var w = parseInt(danmus[danmu_].style.left);
+                    w = w - that.danmu_speed;
+                    danmus[danmu_].style.left = w + "px";
+                }
+            }
+        }
+    },
     start: function () {
-        setInterval(this.moveDanmu, 5, this);
+        setInterval(this.moveDanmu, 1, this);
+        setInterval(this.fixDanmu, 1, this);
     },
     fadeIn: function (el, time) {
         if (el.style.opacity === "") {
@@ -232,6 +247,19 @@ Danmu_comment.prototype = {
             document.getElementById(this.alerts[i].id).setAttribute("name", "danmu");
         }
         this.alerts.splice(0, count);
+    },
+    getElementByClassName: function (parent, tagName, classname) {
+        var aEls = parent.getElementsByTagName(tagName);   //找到给定父元素下的给定标签名
+        var arr = [];  //定义一个返回的数组
+        for (var i = 0; i < aEls.length; i++) {
+            var aClassName = aEls[i].className.split(" ");   //将符合条件的每个元素的class属性都分割成数组
+            for (var j = 0; j < aClassName.length; j++) {
+                if (aClassName[j] === classname) {   //如果包含class就添加到给定数组里
+                    arr.push(aEls[i]);
+                    break;   //该元素添加了就退出循环，防止HTML文件里某一元素有两个重复的class导致程序出错
+                }
+            }
+        }
+        return arr;  //返回符合条件的元素的数组
     }
 };
-
