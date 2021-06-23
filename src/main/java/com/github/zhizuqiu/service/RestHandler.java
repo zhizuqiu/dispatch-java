@@ -171,7 +171,7 @@ public class RestHandler {
     }
 
     @HttpMap(path = "/file/UploadFile",
-            paramType = HttpMap.ParamType.FORM_DATA,
+            paramType = HttpMap.ParamType.MULTIPART_FORM_DATA,
             returnType = HttpMap.ReturnType.APPLICATION_JSON,
             method = HttpMap.Method.POST)
     public String upload(Map<String, String> mapParam, FileUpload[] fileUploads, DefaultFullHttpResponse response) {

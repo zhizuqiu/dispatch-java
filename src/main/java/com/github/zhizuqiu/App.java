@@ -61,6 +61,7 @@ public class App {
                 .setPackages("com.github.zhizuqiu.service")
                 .setBossThreadCount(BOSSTHREADCOUNT)
                 .setWorkThreadCount(WORKTHREADCOUNT)
+                .setEnableUpload(true)
                 .setRestCallback((bossGroup, workerGroup) -> LOGGER.info("callback"));
 
         if (ENABLEMARKDOWNTOHTML) {
