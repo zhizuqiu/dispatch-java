@@ -16,6 +16,8 @@ public class App {
     private static boolean ENABLEMARKDOWNTOHTML = false;
     public static String DANMUHOST = "localhost";
     public static String DANMUPORT = "9090";
+    public static int GOTTYPORT = 9091;
+    public static int GOTTYTIMEOUT = 20;
 
 
     public static void main(String[] args) {

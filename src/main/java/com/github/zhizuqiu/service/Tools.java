@@ -141,4 +141,19 @@ public class Tools {
             return null;
         }
     }
+
+    /**
+     * 字符串是否为正整数
+     *
+     * @param str 字符串
+     * @return 是否
+     */
+    public static boolean isPositiveInteger(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

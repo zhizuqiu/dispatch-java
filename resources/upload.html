@@ -85,6 +85,8 @@
     <div style="margin-right: 10px;float:left;">
         <a id="newDir" style="cursor:pointer;color: #00a2d4"><u>新建目录</u></a>
         <a style="margin-left: 10px">|</a>
+        <a id="getTty" style="margin-left: 10px;cursor:pointer;color: #00a2d4"><u>tty</u></a>
+        <a style="margin-left: 10px">|</a>
     </div>
     <div id="breadcrumb" style="width:100%;">
     </div>
@@ -94,7 +96,11 @@
 </div>
 <div style="width:35%;float:left;margin-left:4px;">
     <div>
-        <label>工具 [ <a href="static/dispatch-tool/dispatch">dispatch</a><img id="dispatchTool" title="复制下载地址" class="clip" data-clipboard-text='' src="static/img/url.png" style="margin-left: 5px;margin-right: 5px;cursor:pointer;"/>] [<a target="_blank" href="static/dispatch-tool/dispatch-tool.html">使用说明</a>]</label>
+        <label>工具 [ <a href="static/dispatch-tool/dispatch">dispatch</a><img id="dispatchTool" title="复制下载地址"
+                                                                             class="clip" data-clipboard-text=''
+                                                                             src="static/img/url.png"
+                                                                             style="margin-left: 5px;margin-right: 5px;cursor:pointer;"/>]
+            [<a target="_blank" href="static/dispatch-tool/dispatch-tool.html">使用说明</a>]</label>
     </div>
     <div id="upload-container">
         <span>点击或将文件拖拽至此上传</span>
@@ -199,7 +205,7 @@
             //请求方式
             type: "GET",
             //请求地址
-            url: "file/List?Path=" + getQueryString("Path"),
+            url: "file/List?Path=" + encodeURIComponent(getQueryString("Path")),
             //请求成功
             success: function (result) {
                 createLi(result);
@@ -212,6 +218,56 @@
         });
     }
 
+    $('#getTty').click(function () {
+        getTty();
+    });
+
+    function getTty() {
+        $.ajax({
+            //请求方式
+            type: "GET",
+            //请求地址
+            url: "getGottyPath?Path=" + encodeURIComponent(getQueryString("Path")),
+            //请求成功
+            success: function (result) {
+                openTty(result.path);
+            },
+            //请求失败，包含具体的错误信息
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function openTty(port) {
+        const iWidth = window.screen.availWidth - 200;
+        const iHeight = window.screen.availHeight - 100;
+        const iTop = (window.screen.availHeight - 30 - iHeight) / 2;
+        const iLeft = (window.screen.availWidth - 10 - iWidth) / 2;
+
+        var host = window.location.host;
+        var i = host.length;
+        var endIndex = host.length;
+        for (; i >= 0; i -= 1) {
+            if (host.charAt(i) === ':') {
+                endIndex = i;
+                break;
+            }
+        }
+
+        var realHost = host.substring(0, endIndex)
+        if (i !== endIndex) {
+            realHost = host
+        }
+
+        window.open(
+            window.location.protocol + "//" + realHost + port,
+            name,
+            `height=${iHeight},innerHeight=${iHeight},width=${iWidth},innerWidth=${iWidth},top=${iTop},left=${iLeft},status=no,toolbar=no,menubar=no,location=no,resizable=no,scrollbars=0,titlebar=no`
+        );
+
+    }
+
     function createLi(result) {
         console.log(result);
         var list = $('#list');
@@ -219,7 +275,7 @@
         list.append('<thead><tr><th style="width:60%;text-align:left;">Name</th><th style="width:20%;text-align:left;">LastModified</th><th style="width:10%;text-align:left;">Length</th><th style="width:5%;text-align:left;">Action</th></tr></thead>');
         for (var i = 0; i < result.length; i++) {
             if (!result[i].IsDir) {
-                list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a style="padding-left: 23px;" href="data' + result[i].Path + '">' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
+                list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a style="padding-left: 23px;" href="' + getClickPath(result[i].Path) + '">' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
             } else {
                 list.append('<tbody><tr><td style="border-bottom: 1px solid #a9a9a9;"><a href="upload?Path=' + result[i].Path + '"><img src="static/img/dir.png" style="vertical-align: middle;height:23px" alt=""/>' + result[i].Name + '</a></td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].LastModified + '</td><td style="border-bottom: 1px solid #a9a9a9;">' + result[i].Length + '</td><td style="border-bottom: 1px solid #a9a9a9;"><img title="删除" src="static/img/alter_delete.png" onclick=\'deleteLi(\"' + result[i].Path + '\",' + result[i].IsDir + ')\' style="margin-left: 10px;cursor:pointer;"/><img title="复制下载地址" class="clip" data-clipboard-text="' + getDownPath(result[i].Path) + '" src="static/img/url.png" style="margin-left: 10px;cursor:pointer;"/></td></tr></tbody>');
             }
@@ -250,8 +306,22 @@
                 break;
             }
         }
-        var realUrl = url.substring(0, endIndex);
-        return realUrl + "/data" + path;
+
+        var realUrl = url.substring(0, endIndex)
+
+        if (path.length > 0 && path.charAt(0) === '/') {
+            return realUrl + "/data" + "/" + encodeURIComponent(path.substring(1));
+        } else {
+            return realUrl + "/data" + "/" + encodeURIComponent(path);
+        }
+    }
+
+    function getClickPath(path) {
+        if (path.length > 0 && path.charAt(0) === '/') {
+            return "data" + "/" + encodeURIComponent(path.substring(1));
+        } else {
+            return "data" + "/" + encodeURIComponent(path);
+        }
     }
 
     var clipboard = new Clipboard('.clip');
@@ -275,7 +345,7 @@
                 //请求方式
                 type: "DELETE",
                 //请求地址
-                url: "file/Delete?Path=" + id + "&IsDir=" + isDir,
+                url: "file/Delete?Path=" + encodeURIComponent(id) + "&IsDir=" + isDir,
                 //请求成功
                 success: function (result) {
                     initLi();
@@ -299,7 +369,7 @@
                 //请求方式
                 type: "PUT",
                 //请求地址
-                url: "file/newDir?Path=" + path,
+                url: "file/newDir?Path=" + encodeURIComponent(path),
                 //请求成功
                 success: function (result) {
                     initLi();
@@ -318,15 +388,15 @@
     var uploader = WebUploader.create({
         auto: true,// 选完文件后，是否自动上传。
         swf: 'static//Uploader.swf',// swf文件路径
-        server: 'file/UploadFile?Path=' + getQueryString("Path"), // 文件接收服务端。
+        server: 'file/UploadFile?Path=' + encodeURIComponent(getQueryString("Path")), // 文件接收服务端。
         dnd: '#upload-container',
         pick: '#picker',// 内部根据当前运行是创建，可能是input元素，也可能是flash. 这里是div的id
         multiple: true, // 选择多个
         chunked: false,// 开起分片上传。
         threads: 5, // 上传并发数。允许同时最大上传进程数。
         method: 'POST', // 文件上传方式，POST或者GET。
-        fileSizeLimit: 1024 * 1024 * 1024 * 5, //验证文件总大小是否超出限制, 超出则不允许加入队列。
-        fileSingleSizeLimit: 1024 * 1024 * 1024, //验证单个文件大小是否超出限制, 超出则不允许加入队列。1024 * 1024为1M
+        fileSizeLimit: 1024 * 1024 * 1024 * 1024, //验证文件总大小是否超出限制, 超出则不允许加入队列。
+        fileSingleSizeLimit: 1024 * 1024 * 1024 * 1024, //验证单个文件大小是否超出限制, 超出则不允许加入队列。1024 * 1024为1M
         fileVal: 'upload', // [默认值：'file'] 设置文件上传域的name。
     });
 

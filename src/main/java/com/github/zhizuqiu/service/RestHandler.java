@@ -1,12 +1,15 @@
 package com.github.zhizuqiu.service;
 
 import com.github.zhizuqiu.App;
+import com.github.zhizuqiu.model.GottyPath;
 import com.github.zhizuqiu.model.Path;
 import com.github.zhizuqiu.model.Result;
 import com.github.zhizuqiu.nettyrestful.core.annotation.HttpHandler;
 import com.github.zhizuqiu.nettyrestful.core.annotation.HttpMap;
 import com.github.zhizuqiu.nettyrestful.server.bean.RestMethodKey;
 import com.github.zhizuqiu.nettyrestful.server.store.MethodData;
+import com.github.zhizuqiu.service.gotty.ProcessThread;
+import com.github.zhizuqiu.service.gotty.ProcessUtil;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
@@ -17,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 @HttpHandler
 public class RestHandler {
@@ -209,6 +214,45 @@ public class RestHandler {
         }
 
         return "上传成功";
+    }
+
+    /**
+     * 获取gotty地址
+     */
+    @HttpMap(path = "/getGottyPath")
+    public GottyPath getGottyPath(Map<String, String> mapParam, DefaultFullHttpResponse response) {
+        GottyPath gottyPath = new GottyPath();
+        if (mapParam == null || mapParam.isEmpty()) {
+            response.setStatus(BAD_REQUEST);
+            return gottyPath;
+        }
+
+        String path = mapParam.get("Path");
+        if (path == null || path.trim().isEmpty()) {
+            response.setStatus(BAD_REQUEST);
+            return gottyPath;
+        }
+
+
+        String uuid = UUID.randomUUID().toString();
+        Integer availablePort = App.GOTTYPORT;
+
+        String cmd = "/gotty/gotty -p " + availablePort + " --ws-origin '.' -u " + uuid + "  --term hterm --once "
+                + " --timeout " + App.GOTTYTIMEOUT + " --title-format " + path + "-" + uuid
+                + " -w sh /gotty/cd.sh /resources/data" + path;
+
+        //初始化线程调用gotty启动命令
+        ProcessThread process = new ProcessThread(cmd);
+        process.start();
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage());
+        }
+
+        gottyPath.setPath(":" + App.GOTTYPORT + "/" + uuid + "/");
+        return gottyPath;
     }
 
 }
