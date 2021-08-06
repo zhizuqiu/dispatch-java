@@ -56,6 +56,16 @@ public class App {
             DANMUPORT = danmuPort;
         }
 
+        String gottyPort = System.getenv("DP_GOTTY_PORT");
+        if (gottyPort != null && Tools.isNumeric(gottyPort)) {
+            GOTTYPORT = Integer.parseInt(gottyPort);
+        }
+
+        String gottyTimeout = System.getenv("DP_GOTTY_TIMEOUT");
+        if (gottyTimeout != null && Tools.isNumeric(gottyTimeout)) {
+            GOTTYTIMEOUT = Integer.parseInt(gottyTimeout);
+        }
+
         NettyRestServer.NettyRestServerBuilder nettyRestServerBuilder = new NettyRestServer.NettyRestServerBuilder()
                 .setSsl(false)
                 .setPort(PORT)
