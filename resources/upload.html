@@ -282,6 +282,7 @@
         }
     }
 
+    // 获取 dispatch-tool 的下载地址
     function getDispatchIpDownPath() {
         var url = window.location.origin + window.location.pathname;
         var i = url.length;
@@ -296,6 +297,7 @@
         return realUrl + "/static/dispatch-tool/dispatch";
     }
 
+    // 获取 copy下载地址按钮的下载地址，path=/fdf/[AMV-Re.T][Reality_&_Dream][GrowingNOOB]_h264.mp4
     function getDownPath(path) {
         var url = window.location.origin + window.location.pathname;
         var i = url.length;
@@ -306,21 +308,37 @@
                 break;
             }
         }
-
-        var realUrl = url.substring(0, endIndex)
-
-        if (path.length > 0 && path.charAt(0) === '/') {
-            return realUrl + "/data" + "/" + encodeURIComponent(path.substring(1));
-        } else {
-            return realUrl + "/data" + "/" + encodeURIComponent(path);
-        }
+        var realUrl = url.substring(0, endIndex);
+        return realUrl + "/" + getClickPath(path);
     }
 
+    // 获取点击的文件名的下载地址，path=/fdf/[AMV-Re.T][Reality_&_Dream][GrowingNOOB]_h264.mp4
     function getClickPath(path) {
-        if (path.length > 0 && path.charAt(0) === '/') {
-            return "data" + "/" + encodeURIComponent(path.substring(1));
+        var i = path.length;
+        var startIndex = path.length;
+        for (; i >= 0; i -= 1) {
+            if (path.charAt(i) === '/') {
+                startIndex = i;
+                break;
+            }
+        }
+        var name = path.substring(startIndex)
+        if (name.length > 0 && name.charAt(0) === '/') {
+            name = "/" + encodeURIComponent(name.substring(1))
         } else {
-            return "data" + "/" + encodeURIComponent(path);
+            name = "/" + encodeURIComponent(name)
+        }
+
+        path = path.substring(0, startIndex)
+
+        if (path.length > 0 && path.charAt(0) === '/') {
+            return "data" + "/" + path.substring(1) + name;
+        } else {
+            if (path !== "") {
+                return "data" + "/" + path + name;
+            } else {
+                return "data" + name;
+            }
         }
     }
 
