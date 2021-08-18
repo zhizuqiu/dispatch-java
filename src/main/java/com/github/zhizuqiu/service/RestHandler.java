@@ -237,7 +237,7 @@ public class RestHandler {
         String uuid = UUID.randomUUID().toString();
         Integer availablePort = App.GOTTYPORT;
 
-        String cmd = "/gotty/gotty -p " + availablePort + " --ws-origin '.' -u " + uuid + "  --term hterm --once "
+        String cmd = "/gotty/gotty -p " + availablePort + " --ws-origin '.' -u " + uuid + "  --term xterm --once "
                 + " --timeout " + App.GOTTYTIMEOUT + " --title-format " + path + "-" + uuid
                 + " -w sh /gotty/cd.sh /resources/data" + path;
 
