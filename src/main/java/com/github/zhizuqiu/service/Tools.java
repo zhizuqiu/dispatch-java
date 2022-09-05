@@ -1,6 +1,7 @@
 package com.github.zhizuqiu.service;
 
 
+import com.github.zhizuqiu.model.User;
 import com.google.gson.*;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 public class Tools {
     private static Pattern doublePattern = Pattern.compile("^[-\\+]?[.\\d]*$");
     private static Pattern intPattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    public static String LOGIN_COOKIE = "dp-session";
 
     /**
      * 字符串是否为数字
@@ -155,5 +157,16 @@ public class Tools {
             }
         }
         return true;
+    }
+
+    public static boolean assertPassword(User user) {
+        if (user.getUser() == null || user.getPassword() == null) {
+            return false;
+        }
+        if (user.getUser().equals(System.getenv("DP_USER")) &&
+                user.getPassword().equals(System.getenv("DP_PASSWORD"))) {
+            return true;
+        }
+        return false;
     }
 }

@@ -4,14 +4,20 @@ import com.github.zhizuqiu.App;
 import com.github.zhizuqiu.model.GottyPath;
 import com.github.zhizuqiu.model.Path;
 import com.github.zhizuqiu.model.Result;
+import com.github.zhizuqiu.model.User;
 import com.github.zhizuqiu.nettyrestful.core.annotation.HttpHandler;
 import com.github.zhizuqiu.nettyrestful.core.annotation.HttpMap;
 import com.github.zhizuqiu.nettyrestful.server.bean.RestMethodKey;
 import com.github.zhizuqiu.nettyrestful.server.store.MethodData;
 import com.github.zhizuqiu.service.gotty.ProcessThread;
-import com.github.zhizuqiu.service.gotty.ProcessUtil;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -31,6 +37,32 @@ public class RestHandler {
     public String getMain() {
         RestMethodKey methodKey = new RestMethodKey("/index.html", HttpMap.Method.GET, HttpMap.ParamType.URL_DATA);
         return MethodData.getResourceAndTemplate(methodKey);
+    }
+
+    @HttpMap(path = "/login",
+            paramType = HttpMap.ParamType.JSON,
+            returnType = HttpMap.ReturnType.APPLICATION_JSON,
+            method = HttpMap.Method.POST
+    )
+    public Result login(String jsonParam, DefaultFullHttpResponse response) {
+        User param;
+        try {
+            param = new Gson().fromJson(jsonParam, User.class);
+        } catch (JsonSyntaxException e) {
+            response.setStatus(BAD_REQUEST);
+            return null;
+        }
+        boolean ok = Tools.assertPassword(param);
+        if (ok) {
+            Cookie cookie = new DefaultCookie(Tools.LOGIN_COOKIE, "");
+            cookie.setPath("/");
+            // 一天
+            cookie.setMaxAge(86400);
+            response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+            return new Result(200, "登录成功");
+        } else {
+            return new Result(403, "用户名或密码错误");
+        }
     }
 
     @HttpMap(path = "/upload", returnType = HttpMap.ReturnType.TEXT_HTML)

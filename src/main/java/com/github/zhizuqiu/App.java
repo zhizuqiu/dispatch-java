@@ -3,6 +3,7 @@ package com.github.zhizuqiu;
 import com.github.zhizuqiu.nettyrestful.server.NettyRestServer;
 import com.github.zhizuqiu.service.MarkdownHandler;
 import com.github.zhizuqiu.service.Tools;
+import com.github.zhizuqiu.service.interceptor.LoginInterceptorBuilder;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -18,7 +19,7 @@ public class App {
     public static String DANMUPORT = "9090";
     public static int GOTTYPORT = 9091;
     public static int GOTTYTIMEOUT = 20;
-
+    private static boolean ENABLELOGIN = false;
 
     public static void main(String[] args) {
         String portStr = System.getenv("DP_PORT");
@@ -66,6 +67,11 @@ public class App {
             GOTTYTIMEOUT = Integer.parseInt(gottyTimeout);
         }
 
+        String enableLogin = System.getenv("DP_ENABLE_LOGIN");
+        if (enableLogin != null) {
+            ENABLELOGIN = Tools.isBool(enableLogin);
+        }
+
         NettyRestServer.NettyRestServerBuilder nettyRestServerBuilder = new NettyRestServer.NettyRestServerBuilder()
                 .setSsl(false)
                 .setPort(PORT)
@@ -75,6 +81,10 @@ public class App {
                 .setWorkThreadCount(WORKTHREADCOUNT)
                 .setEnableUpload(true)
                 .setRestCallback((bossGroup, workerGroup) -> LOGGER.info("callback"));
+
+        if (ENABLELOGIN) {
+            nettyRestServerBuilder.setInterceptorBuilder(new LoginInterceptorBuilder());
+        }
 
         if (ENABLEMARKDOWNTOHTML) {
             nettyRestServerBuilder.setStaticFileHandler(new MarkdownHandler());

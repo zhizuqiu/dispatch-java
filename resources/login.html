@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dispatch</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="static/img/dispatch.png"/>
+
+    <style type="text/css">
+        *, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 20px;
+            background-color: #fff;
+        }
+
+        header,
+        footer {
+            width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .logo {
+            background-image: url('static/img/dispatch.png');
+            background-repeat: no-repeat;
+            -webkit-background-size: 100px 100px;
+            background-size: 100px 100px;
+            background-position: center center;
+            text-align: center;
+            font-size: 42px;
+            padding: 250px 0 70px;
+            font-weight: normal;
+            text-shadow: 0 1px 2px #ddd;
+        }
+
+        header {
+            padding: 50px 0;
+        }
+
+        footer {
+            line-height: 1.8;
+            text-align: center;
+            padding: 50px 0;
+            color: #999;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .login {
+            text-align: center;
+            font-size: 16px;
+            padding-top: 20px;
+        }
+
+        a {
+            color: #444;
+            text-decoration: none;
+        }
+
+        .backdrop {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 100px #ddd;
+            z-index: -1;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1 class="logo">Dispatch</h1>
+    <div class="description">
+        Dispatch is a simple & powerful Dispatch System.
+    </div>
+</header>
+<footer>
+    <div class="login">
+        <div>
+            <label for="user"></label><input id="user" placeholder="username"/>
+        </div>
+        <div>
+            <label for="password"></label><input id="password" placeholder="password"/>
+        </div>
+    </div>
+    <div class="author">
+        <a style="cursor: pointer" id="login"><b style="text-decoration:underline">Enter</b></a>
+    </div>
+</footer>
+<div class="backdrop"></div>
+</body>
+<script src="static/jquery/jquery-2.0.2.min.js"></script>
+<script>
+    var userInput = $("#user");
+    var passInput = $("#password");
+
+    $(document).ready(function () {
+        userInput.focus();
+    });
+
+    $('#login').click(function () {
+        login();
+    });
+
+    function login() {
+        $.ajax({
+            //请求方式
+            type: "POST",
+            //请求地址
+            url: "login",
+            data: JSON.stringify({
+                "user": userInput.val(),
+                "password": passInput.val()
+            }),
+            contentType: 'application/json',
+            //请求成功
+            success: function (result) {
+                if (result.code === 200) {
+                    window.location.href = "upload?Path=/";
+                } else {
+                    alert(result.message);
+                }
+            },
+            //请求失败，包含具体的错误信息
+            error: function (e) {
+                console.log(e)
+            }
+        });
+    }
+
+    userInput.keydown(function (e) {
+        if (e.which === 13) {
+            login();
+        }
+    });
+    passInput.keydown(function (e) {
+        if (e.which === 13) {
+            login();
+        }
+    });
+</script>
+</html>
