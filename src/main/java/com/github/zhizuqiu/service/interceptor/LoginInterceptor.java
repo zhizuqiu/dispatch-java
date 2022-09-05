@@ -1,21 +1,20 @@
 package com.github.zhizuqiu.service.interceptor;
 
+import com.github.zhizuqiu.model.User;
 import com.github.zhizuqiu.nettyrestful.server.interceptor.AbstractInterceptor;
 import com.github.zhizuqiu.nettyrestful.server.interceptor.InterceptorResponse;
 import com.github.zhizuqiu.nettyrestful.server.tools.RequestParser;
+import com.github.zhizuqiu.service.Base64Util;
 import com.github.zhizuqiu.service.Tools;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class LoginInterceptor extends AbstractInterceptor {
-
 
     @Override
     public boolean preHandle(FullHttpRequest req, InterceptorResponse interceptorResponse) {
@@ -33,30 +32,27 @@ public class LoginInterceptor extends AbstractInterceptor {
             return true;
         }
 
-        // 校验cookie
-        Set<Cookie> cookies = RequestParser.getCookies(req);
-        // 遍历
-        Iterator<Cookie> i = cookies.iterator();
-        boolean has = false;
-        while (i.hasNext()) {
-            Cookie cookie = i.next();
-            if (Tools.LOGIN_COOKIE.equals(cookie.name())) {
-                has = true;
-                break;
+        boolean ok = false;
+        String auth = req.headers().get("Authorization");
+        if ((auth != null) && (auth.length() > 6)) {
+            auth = auth.substring(6);
+            String decodedAuth = Base64Util.decode(auth);
+            String[] auths = decodedAuth.split(":");
+            User user = new User();
+            if (auths.length > 1) {
+                user.setUser(auths[0]);
+                user.setPassword(auths[1]);
             }
-        }
-        // 如果没有设置cookie，重定向到登录页
-        if (!has) {
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
-            HttpHeaders headers = res.headers();
-            headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "x-requested-with,content-type");
-            headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "POST,GET");
-            headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-            headers.set(HttpHeaderNames.CONTENT_LENGTH, res.content().readableBytes());
-            headers.set(HttpHeaderNames.LOCATION, "/login.html");
-            return false;
+            ok = Tools.assertPassword(user);
         }
 
+        if (!ok) {
+            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED);
+            HttpHeaders headers = res.headers();
+            headers.set("WWW-authenticate", "Basic test=\"test\"");
+            interceptorResponse.setResponse(res);
+            return false;
+        }
         return true;
     }
 
