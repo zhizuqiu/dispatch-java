@@ -28,7 +28,9 @@ public class LoginInterceptor extends AbstractInterceptor {
                 || url.endsWith(".ico")
                 || url.endsWith(".json")
                 || url.endsWith("/login.html")
-                || url.endsWith("/login")) {
+                || url.endsWith("/login")
+                || url.endsWith("/dispatch")
+        ) {
             return true;
         }
 
